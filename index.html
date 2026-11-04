@@ -1,58 +1,103 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>JARVIS · SMR / SRVUZ Ecosystem</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#02040a;color:#dfefff;font:14px/1.4 system-ui,Segoe UI,sans-serif;overflow:hidden}
+:root{--s1:8px;--s2:12px;--s3:16px;--s4:24px;--c:#7fe0ff;--t1:20px;--t2:15px;--t3:13px;--t4:11px;--glass:rgba(14,30,56,.5);--bd:rgba(120,200,255,.22)}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:#02040a;color:#dfefff;font:var(--t3)/1.5 Inter,system-ui,Segoe UI,sans-serif;overflow:hidden}
 #c{position:fixed;inset:0}
-.glass{background:rgba(20,40,70,.35);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(120,200,255,.25);border-radius:16px;box-shadow:0 0 30px rgba(0,160,255,.15)}
-header{position:fixed;top:12px;left:12px;padding:10px 16px}h1{margin:0;font-size:18px;letter-spacing:.2em;color:#7fe0ff}small{opacity:.7}
-#side{position:fixed;top:12px;right:12px;bottom:12px;width:330px;padding:14px;overflow:auto}
-#side h2{font-size:12px;letter-spacing:.18em;color:#7fe0ff;margin:14px 0 6px}#side li{margin:4px 0}ul{padding-left:18px;margin:0}
-#detail{position:fixed;left:12px;bottom:12px;width:360px;padding:14px;display:none}#detail h3{margin:0 0 6px;color:#9ff}
-.st{display:inline-block;padding:1px 8px;border-radius:9px;font-size:11px;text-transform:uppercase;background:#123}
-.x{float:right;cursor:pointer}
-@media(max-width:760px){#side{top:auto;left:8px;right:8px;width:auto;height:38vh;bottom:8px}#detail{left:8px;right:8px;width:auto;bottom:40vh}header{left:8px;right:8px}}
+.glass{background:var(--glass);backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);border:1px solid var(--bd);border-radius:16px;box-shadow:0 8px 40px rgba(0,120,255,.12)}
+#top{position:fixed;top:var(--s2);left:var(--s2);right:var(--s2);height:64px;display:flex;align-items:center;gap:var(--s3);padding:0 var(--s3);z-index:5}
+#top .brand{font-size:var(--t4);letter-spacing:.3em;color:var(--c)}#greet{font-size:var(--t1);font-weight:600}#date{font-size:var(--t4);opacity:.7}
+#top .grow{flex:1}#status{font-size:var(--t4);opacity:.8;max-width:38vw;text-align:right}
+#mic{width:44px;height:44px;border-radius:50%;border:0;cursor:pointer;background:radial-gradient(circle at 35% 30%,#bff4ff,#1aa7ff 45%,#053a7a);box-shadow:0 0 18px #1aa7ff;transition:transform .2s}
+#mic.on{animation:pulse 1s infinite}@keyframes pulse{50%{transform:scale(1.15);box-shadow:0 0 34px #6ff}}
+#side{position:fixed;top:88px;right:var(--s2);bottom:var(--s2);width:340px;display:flex;flex-direction:column;z-index:4;transition:transform .35s ease}
+.tabs{display:flex;gap:4px;padding:var(--s1)}.tabs button{flex:1;padding:var(--s1) 0;border:0;border-radius:10px;background:transparent;color:#9cc;font:600 var(--t4)/1 inherit;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .2s}
+.tabs button.act{background:rgba(127,224,255,.16);color:#fff}
+.pane{flex:1;overflow:auto;padding:0 var(--s3) var(--s3);display:none;animation:fade .3s}.pane.act{display:block}@keyframes fade{from{opacity:0;transform:translateY(6px)}}
+h4{font-size:var(--t4);letter-spacing:.18em;color:var(--c);margin:var(--s3) 0 var(--s1);text-transform:uppercase}
+.card{padding:var(--s2);margin-bottom:var(--s1);border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:var(--s1);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.st{display:inline-block;padding:2px 8px;border-radius:9px;font-size:var(--t4);text-transform:uppercase;background:rgba(0,0,0,.35);white-space:nowrap}
+textarea{width:100%;min-height:200px;background:rgba(0,0,0,.3);color:#dff;border:1px solid var(--bd);border-radius:12px;padding:var(--s2);font:inherit}
+#detail{position:fixed;left:var(--s2);bottom:var(--s2);width:360px;padding:var(--s3);z-index:4;opacity:0;pointer-events:none;transform:translateY(16px);transition:.3s}
+#detail.open{opacity:1;pointer-events:auto;transform:none}#detail h3{margin:0 0 var(--s1);font-size:var(--t2);color:#bff}
+.x{float:right;cursor:pointer;opacity:.7;border:0;background:none;color:#fff;font-size:16px}
+#legend{position:fixed;left:var(--s2);top:88px;padding:var(--s1) var(--s2);z-index:3;display:flex;flex-direction:column;gap:4px}
+.tag{position:fixed;pointer-events:auto;cursor:pointer;transform:translate(-50%,-100%);font-size:var(--t4);font-weight:600;padding:2px 8px;border-radius:8px;background:rgba(2,8,20,.6);border:1px solid rgba(127,224,255,.2);white-space:nowrap;z-index:2;transition:opacity .2s}
+.tag.core{font-size:var(--t3);color:#fff}
+@media(max-width:760px){
+ #top{height:56px;padding:0 var(--s2)}#greet{font-size:var(--t2);white-space:nowrap}#date{display:none}#status,#top .brand,#legend{display:none}
+ #side{top:auto;left:0;right:0;bottom:0;width:auto;height:46vh;border-radius:20px 20px 0 0;transform:translateY(calc(100% - 92px))}
+ #side.open{transform:none}#grab{display:block!important}
+ #detail{left:var(--s1);right:var(--s1);width:auto;bottom:100px}
+ .tag{font-size:10px}}
+#grab{display:none;width:44px;height:5px;border-radius:3px;background:#7aa;margin:var(--s1) auto 0;cursor:pointer}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 </head><body><canvas id="c"></canvas>
-<header class="glass"><h1>J.A.R.V.I.S.</h1><small id="asof"></small><br><small>Tap a node · drag to orbit · gold particles = money flow</small></header>
-<aside id="side" class="glass"></aside><div id="detail" class="glass"></div>
+<div id="top" class="glass"><div><div class="brand">J.A.R.V.I.S.</div><div id="greet"></div></div><div id="date"></div><div class="grow"></div><div id="status">Tap the orb and say "briefing", "decisions", "bots" or a project name</div><button id="mic" title="Talk to Jarvis" aria-label="Talk to Jarvis"></button></div>
+<div id="legend" class="glass"></div>
+<aside id="side" class="glass"><div id="grab"></div><div class="tabs"><button data-t="brief" class="act">Briefing</button><button data-t="dec">Decisions</button><button data-t="bots">Bots</button><button data-t="notes">Notes</button></div>
+<div id="brief" class="pane act"></div><div id="dec" class="pane"></div><div id="bots" class="pane"></div><div id="notes" class="pane"><h4>Your notes (saved on this device)</h4><textarea id="nt" placeholder="Type a note…"></textarea></div></aside>
+<div id="detail" class="glass"></div>
 <script type="module">
 import * as THREE from 'three';import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 const D=await (await fetch('data.json')).json();
-const COL={live:0x33ff99,building:0x33c8ff,staged:0x9b7bff,decision:0xffc23d,blocked:0xff4d5e,unverified:0xff8a3d,deadline:0xff4dd2};
-document.getElementById('asof').textContent='As of '+D.asOf;
-const side=document.getElementById('side');
-side.innerHTML=`<h2>TODAY'S PRIORITIES</h2><ul>${D.priorities.map(p=>`<li>${p}</li>`).join('')}</ul>
-<h2>WAITING ON YOU (${D.decisions.length})</h2><ul>${D.decisions.map(p=>`<li>${p}</li>`).join('')}</ul>
-<h2>BOT STATUS</h2><ul>${D.bots.map(([b,s])=>`<li>${b} · <span class=st style="color:${s=='active'?'#3f9':'#fc3'}">${s}</span></li>`).join('')}</ul>
-<h2>LEGEND</h2>${Object.entries(COL).map(([k,v])=>`<span class=st style="color:#${v.toString(16).padStart(6,'0')}">${k}</span> `).join('')}
-<p><small>Unknown numbers are marked unknown. Sources: ${D.sources.join(', ')}</small></p>`;
-const cv=document.getElementById('c'),R=new THREE.WebGLRenderer({canvas:cv,antialias:true,preserveDrawingBuffer:true});R.setPixelRatio(Math.min(devicePixelRatio,2));
-const S=new THREE.Scene();S.fog=new THREE.FogExp2(0x02040a,.012);const C=new THREE.PerspectiveCamera(55,1,.1,500);C.position.set(0,26,48);
-const ctl=new OrbitControls(C,cv);ctl.enableDamping=true;ctl.autoRotate=true;ctl.autoRotateSpeed=.4;
-S.add(new THREE.AmbientLight(0x88aaff,.6));const pl=new THREE.PointLight(0x66ccff,300);S.add(pl);
-const comp=new EffectComposer(R);comp.addPass(new RenderPass(S,C));const bloom=new UnrealBloomPass(new THREE.Vector2(1,1),1.1,.6,.1);comp.addPass(bloom);
-// grid + stars
-const g=new THREE.PolarGridHelper(34,16,8,64,0x114466,0x0a2a44);g.position.y=-6;S.add(g);
+const COL={live:0x33ff99,building:0x33c8ff,staged:0x9b7bff,decision:0xffc23d,blocked:0xff4d5e,unverified:0xff8a3d,deadline:0xff4dd2};const hex=v=>'#'+v.toString(16).padStart(6,'0');
+const RING={smr:0,ceramic:1,club:1,voice:1,ads:1,seo:1,media:1,b2b:1,vpo:2,pm:2,book:2,fund:2};const RAD=[0,13,24];
+const $=id=>document.getElementById(id);const h=new Date().getHours();
+$('greet').textContent=(h<12?'Good morning':h<18?'Good afternoon':'Good evening')+(innerWidth<760?'':', Danielle');$('date').textContent=new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})+' · data as of '+D.asOf;
+$('legend').innerHTML='<h4 style="margin:4px 0">Rings</h4><small>Center: cash engine<br>Middle: growth channels<br>Outer: ventures</small><h4 style="margin:6px 0 2px">Status</h4>'+Object.entries(COL).map(([k,v])=>`<span class=st style="color:${hex(v)}">${k}</span>`).join('');
+$('brief').innerHTML=`<h4>Today's priorities</h4>${D.priorities.map((p,i)=>`<div class=card><b>${i+1}.</b> ${p}</div>`).join('')}<h4>Money flow</h4><div class=card>Ads, SEO, Voice and B2B bring leads → SMR jobs (Square) → Ceramic upsell → Shine Club recurring. Ventures (SRVUZ OS, Project Million, Book, R4R) sit on the outer ring. Revenue totals: unknown.</div><p><small>Sources: ${D.sources.join(', ')}</small></p>`;
+$('dec').innerHTML=`<h4>Waiting on you (${D.decisions.length})</h4>`+D.decisions.map(d=>`<div class=card>${d}</div>`).join('');
+$('bots').innerHTML='<h4>v2 bot status</h4>'+D.bots.map(([b,s])=>`<div class=row><span>${b}</span><span class=st style="color:${s=='active'?'#3f9':'#fc3'}">${s}</span></div>`).join('');
+$('nt').value=localStorage.getItem('jv-notes')||'';$('nt').oninput=e=>localStorage.setItem('jv-notes',e.target.value);
+function tab(t){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('act',b.dataset.t==t));document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('act',p.id==t));$('side').classList.add('open')}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>tab(b.dataset.t));$('grab').onclick=()=>$('side').classList.toggle('open');
+// 3D
+const cv=$('c'),R=new THREE.WebGLRenderer({canvas:cv,antialias:true,preserveDrawingBuffer:true});R.setPixelRatio(Math.min(devicePixelRatio,2));
+const S=new THREE.Scene();S.fog=new THREE.FogExp2(0x02040a,.011);const C=new THREE.PerspectiveCamera(50,1,.1,500);C.position.set(0,34,52);
+const ctl=new OrbitControls(C,cv);ctl.enableDamping=true;ctl.dampingFactor=.06;ctl.autoRotate=true;ctl.autoRotateSpeed=.3;ctl.maxDistance=110;ctl.minDistance=12;
+S.add(new THREE.AmbientLight(0x88aaff,.6));S.add(new THREE.PointLight(0x66ccff,400));
+const comp=new EffectComposer(R);comp.addPass(new RenderPass(S,C));comp.addPass(new UnrealBloomPass(new THREE.Vector2(1,1),.9,.6,.15));
+RAD.slice(1).forEach(r=>{const m=new THREE.Mesh(new THREE.TorusGeometry(r,.06,8,160),new THREE.MeshBasicMaterial({color:0x1f6fa8,transparent:true,opacity:.6}));m.rotation.x=Math.PI/2;S.add(m)});
+const g=new THREE.PolarGridHelper(32,16,6,64,0x0c3355,0x07203a);g.position.y=-4;S.add(g);
 const sg=new THREE.BufferGeometry(),sp=[];for(let i=0;i<1500;i++)sp.push((Math.random()-.5)*300,(Math.random()-.5)*300,(Math.random()-.5)*300);sg.setAttribute('position',new THREE.Float32BufferAttribute(sp,3));S.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0x6688aa,size:.3})));
-function label(t){const c=document.createElement('canvas');c.width=1024;c.height=96;const x=c.getContext('2d');x.font='bold 34px system-ui';x.fillStyle='#dff6ff';x.textAlign='center';x.fillText(t,512,60);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false}));s.scale.set(20,1.9,1);return s}
-const N={},meshes=[];const outer=D.nodes.filter(n=>!n.core);
-D.nodes.forEach(n=>{const col=COL[n.status]||0xffffff;const r=n.core?3:1.4;
- const m=new THREE.Mesh(new THREE.IcosahedronGeometry(r,3),new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:.7,metalness:.4,roughness:.2}));
- const ring=new THREE.Mesh(new THREE.TorusGeometry(r*1.6,.05,8,64),new THREE.MeshBasicMaterial({color:col}));ring.rotation.x=Math.PI/2;m.add(ring);
- const l=label(n.name);l.position.y=r+1.8;m.add(l);m.userData={n,ring};S.add(m);meshes.push(m);N[n.id]=m;
- if(!n.core){const i=outer.indexOf(n);m.userData.a=i/outer.length*Math.PI*2;m.userData.rad=i%2?22:15;m.userData.y=(i%3-1)*3;}});
-const lines=D.links.map(([a,b])=>{const geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]);const ln=new THREE.Line(geo,new THREE.LineBasicMaterial({color:0x2a7fbf,transparent:true,opacity:.5}));S.add(ln);return {a:N[a],b:N[b],ln}});
-const P=[];const pg=new THREE.SphereGeometry(.18,8,8),pm=new THREE.MeshBasicMaterial({color:0xffd34d});
-lines.forEach(L=>{for(let k=0;k<4;k++){const p=new THREE.Mesh(pg,pm);p.userData={L,t:k/4};S.add(p);P.push(p)}});
-const ray=new THREE.Raycaster(),mv=new THREE.Vector2(),det=document.getElementById('detail');
-cv.addEventListener('pointerup',e=>{mv.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);ray.setFromCamera(mv,C);const h=ray.intersectObjects(meshes,false)[0];if(!h)return;const n=h.object.userData.n;
- det.style.display='block';det.innerHTML=`<span class=x onclick="this.parentNode.style.display='none'">✕</span><h3>${n.name}</h3><span class=st style="color:#${(COL[n.status]).toString(16).padStart(6,'0')}">${n.status}</span><p><b>Owner bot:</b> ${n.owner}</p><p><b>Money link:</b> ${n.revenue}</p><ul>${n.facts.map(f=>`<li>${f}</li>`).join('')}</ul><p><small>Connected to: ${D.links.filter(l=>l.includes(n.id)).map(l=>D.nodes.find(x=>x.id==(l[0]==n.id?l[1]:l[0])).name).join(', ')}</small></p>`});
-function rs(){R.setSize(innerWidth,innerHeight);comp.setSize(innerWidth,innerHeight);C.aspect=innerWidth/innerHeight;C.fov=innerWidth<760?75:55;C.updateProjectionMatrix()}addEventListener('resize',rs);rs();
-const clk=new THREE.Clock();(function loop(){const t=clk.getElapsedTime();
- meshes.forEach(m=>{const u=m.userData;if(u.a!==undefined){const a=u.a+t*.05*(u.rad<20?1.3:1);m.position.set(Math.cos(a)*u.rad,u.y+Math.sin(t+u.a)*.5,Math.sin(a)*u.rad)}u.ring.rotation.z=t;m.rotation.y=t*.3});
+const N={},meshes=[];[1,2].forEach(r=>{const L=D.nodes.filter(n=>RING[n.id]==r);L.forEach((n,i)=>{n._a=i/L.length*Math.PI*2+(r==2?.4:0)})});
+D.nodes.forEach(n=>{const col=COL[n.status]||0xffffff,ring=RING[n.id]??1,r=ring==0?3:ring==1?1.4:1.8;
+ const m=new THREE.Mesh(new THREE.IcosahedronGeometry(r,3),new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:.65,metalness:.4,roughness:.25}));
+ const halo=new THREE.Mesh(new THREE.TorusGeometry(r*1.6,.05,8,64),new THREE.MeshBasicMaterial({color:col}));halo.rotation.x=Math.PI/2;m.add(halo);
+ const tag=document.createElement('div');tag.className='tag'+(ring==0?' core':'');tag.textContent=n.name.replace(' · Verified Partner Operations',' · VPO');tag.style.color=hex(col);tag.onclick=()=>open(n);document.body.appendChild(tag);
+ m.userData={n,halo,tag,ring,r};S.add(m);meshes.push(m);N[n.id]=m});
+const lines=D.links.map(([a,b])=>{const geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]);const ln=new THREE.Line(geo,new THREE.LineBasicMaterial({color:0x2a7fbf,transparent:true,opacity:.4}));S.add(ln);return {a:N[a],b:N[b],ln}});
+const P=[],pg=new THREE.SphereGeometry(.16,8,8),pm=new THREE.MeshBasicMaterial({color:0xffd34d});lines.forEach(L=>{for(let k=0;k<3;k++){const p=new THREE.Mesh(pg,pm);p.userData={L,t:k/3};S.add(p);P.push(p)}});
+let focus=null;const tgt=new THREE.Vector3();
+function open(n){const d=$('detail');focus=N[n.id];ctl.autoRotate=false;
+ d.innerHTML=`<button class=x onclick="window.closeD()">✕</button><h3>${n.name}</h3><span class=st style="color:${hex(COL[n.status])}">${n.status}</span><div class=row><span>Owner bot</span><b>${n.owner}</b></div><p><b>Money link:</b> ${n.revenue}</p>${n.facts.map(f=>`<div class=card>${f}</div>`).join('')}<small>Connected to: ${D.links.filter(l=>l.includes(n.id)).map(l=>D.nodes.find(x=>x.id==(l[0]==n.id?l[1]:l[0])).name).join(', ')}</small>`;d.classList.add('open');return n}
+window.closeD=()=>{$('detail').classList.remove('open');focus=null;ctl.autoRotate=true};
+const ray=new THREE.Raycaster(),mv=new THREE.Vector2();let down;cv.addEventListener('pointerdown',e=>down=[e.clientX,e.clientY]);
+cv.addEventListener('pointerup',e=>{if(Math.hypot(e.clientX-down[0],e.clientY-down[1])>6)return;mv.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);ray.setFromCamera(mv,C);const hit=ray.intersectObjects(meshes,false)[0];hit?open(hit.object.userData.n):window.closeD()});
+function rs(){R.setSize(innerWidth,innerHeight);comp.setSize(innerWidth,innerHeight);C.aspect=innerWidth/innerHeight;const m=innerWidth<760;C.fov=m?62:50;C.position.setLength(m?95:62);m?C.clearViewOffset():C.setViewOffset(innerWidth,innerHeight,170,0,innerWidth,innerHeight);C.updateProjectionMatrix()}addEventListener('resize',rs);rs();
+const v=new THREE.Vector3(),clk=new THREE.Clock();
+(function loop(){const t=clk.getElapsedTime();
+ meshes.forEach(m=>{const u=m.userData,n=u.n;if(u.ring){const a=n._a+t*(u.ring==1?.04:.02);m.position.set(Math.cos(a)*RAD[u.ring],Math.sin(t*.8+n._a)*.4+(u.ring==2?2:0),Math.sin(a)*RAD[u.ring])}u.halo.rotation.z=t;m.rotation.y=t*.3});
  lines.forEach(L=>{const p=L.ln.geometry.attributes.position;p.setXYZ(0,...L.a.position.toArray());p.setXYZ(1,...L.b.position.toArray());p.needsUpdate=true});
  P.forEach(p=>{const u=p.userData;u.t=(u.t+.004)%1;p.position.lerpVectors(u.L.a.position,u.L.b.position,u.t)});
- ctl.update();comp.render();requestAnimationFrame(loop)})();
+ tgt.lerp(focus?focus.position:new THREE.Vector3(),.05);ctl.target.copy(tgt);ctl.update();
+ // tags: project, hide behind camera, de-overlap
+ const placed=[];meshes.slice().sort((a,b)=>a.userData.ring-b.userData.ring).forEach(m=>{const u=m.userData;v.copy(m.position);v.y+=u.r+1.2;v.project(C);let x=(v.x+1)/2*innerWidth,y=(1-v.y)/2*innerHeight;
+  for(const q of placed)if(Math.abs(q[0]-x)<q[2]&&Math.abs(q[1]-y)<18)y=q[1]-20;
+  const w=u.tag.offsetWidth/2+u.tag.offsetWidth/2;placed.push([x,y,w]);x=Math.max(u.tag.offsetWidth/2+4,Math.min(innerWidth-u.tag.offsetWidth/2-4,x));u.tag.style.left=x+'px';u.tag.style.top=y+'px';u.tag.style.opacity=v.z<1?1:0});
+ comp.render();requestAnimationFrame(loop)})();
+// Voice
+const say=t=>{if(!speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.rate=1.02;speechSynthesis.speak(u);$('status').textContent=t.slice(0,120)};
+function cmd(q){q=q.toLowerCase();
+ if(/decision|waiting|approve/.test(q)){tab('dec');return say(`You have ${D.decisions.length} decisions waiting. `+D.decisions.join('. '))}
+ if(/bot|team|agent/.test(q)){tab('bots');const off=D.bots.filter(b=>b[1]!='active').map(b=>b[0]);return say(`${D.bots.length-off.length} of ${D.bots.length} bots are active.`+(off.length?' Not checked in: '+off.join(', '):''))}
+ if(/note/.test(q)){tab('notes');return say('Notes are open.')}
+ const n=D.nodes.find(n=>n.name.toLowerCase().split(/[ ·/()]+/).some(w=>w.length>3&&q.includes(w)));if(n){open(n);return say(`${n.name}. Status ${n.status}. Owner ${n.owner}. ${n.revenue}`)}
+ tab('brief');say('Here is your briefing. '+D.priorities.join('. ')+`. And ${D.decisions.length} decisions are waiting on you.`)}
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+$('mic').onclick=()=>{if(!SR)return cmd('briefing');const r=new SR();r.lang='en-US';$('mic').classList.add('on');$('status').textContent='Listening…';r.onresult=e=>cmd(e.results[0][0].transcript);r.onerror=()=>cmd('briefing');r.onend=()=>$('mic').classList.remove('on');r.start()};
 </script></body></html>
