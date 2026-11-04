@@ -1,0 +1,58 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JARVIS · SMR / SRVUZ Ecosystem</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#02040a;color:#dfefff;font:14px/1.4 system-ui,Segoe UI,sans-serif;overflow:hidden}
+#c{position:fixed;inset:0}
+.glass{background:rgba(20,40,70,.35);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(120,200,255,.25);border-radius:16px;box-shadow:0 0 30px rgba(0,160,255,.15)}
+header{position:fixed;top:12px;left:12px;padding:10px 16px}h1{margin:0;font-size:18px;letter-spacing:.2em;color:#7fe0ff}small{opacity:.7}
+#side{position:fixed;top:12px;right:12px;bottom:12px;width:330px;padding:14px;overflow:auto}
+#side h2{font-size:12px;letter-spacing:.18em;color:#7fe0ff;margin:14px 0 6px}#side li{margin:4px 0}ul{padding-left:18px;margin:0}
+#detail{position:fixed;left:12px;bottom:12px;width:360px;padding:14px;display:none}#detail h3{margin:0 0 6px;color:#9ff}
+.st{display:inline-block;padding:1px 8px;border-radius:9px;font-size:11px;text-transform:uppercase;background:#123}
+.x{float:right;cursor:pointer}
+@media(max-width:760px){#side{top:auto;left:8px;right:8px;width:auto;height:38vh;bottom:8px}#detail{left:8px;right:8px;width:auto;bottom:40vh}header{left:8px;right:8px}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head><body><canvas id="c"></canvas>
+<header class="glass"><h1>J.A.R.V.I.S.</h1><small id="asof"></small><br><small>Tap a node · drag to orbit · gold particles = money flow</small></header>
+<aside id="side" class="glass"></aside><div id="detail" class="glass"></div>
+<script type="module">
+import * as THREE from 'three';import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+const D=await (await fetch('data.json')).json();
+const COL={live:0x33ff99,building:0x33c8ff,staged:0x9b7bff,decision:0xffc23d,blocked:0xff4d5e,unverified:0xff8a3d,deadline:0xff4dd2};
+document.getElementById('asof').textContent='As of '+D.asOf;
+const side=document.getElementById('side');
+side.innerHTML=`<h2>TODAY'S PRIORITIES</h2><ul>${D.priorities.map(p=>`<li>${p}</li>`).join('')}</ul>
+<h2>WAITING ON YOU (${D.decisions.length})</h2><ul>${D.decisions.map(p=>`<li>${p}</li>`).join('')}</ul>
+<h2>BOT STATUS</h2><ul>${D.bots.map(([b,s])=>`<li>${b} · <span class=st style="color:${s=='active'?'#3f9':'#fc3'}">${s}</span></li>`).join('')}</ul>
+<h2>LEGEND</h2>${Object.entries(COL).map(([k,v])=>`<span class=st style="color:#${v.toString(16).padStart(6,'0')}">${k}</span> `).join('')}
+<p><small>Unknown numbers are marked unknown. Sources: ${D.sources.join(', ')}</small></p>`;
+const cv=document.getElementById('c'),R=new THREE.WebGLRenderer({canvas:cv,antialias:true,preserveDrawingBuffer:true});R.setPixelRatio(Math.min(devicePixelRatio,2));
+const S=new THREE.Scene();S.fog=new THREE.FogExp2(0x02040a,.012);const C=new THREE.PerspectiveCamera(55,1,.1,500);C.position.set(0,26,48);
+const ctl=new OrbitControls(C,cv);ctl.enableDamping=true;ctl.autoRotate=true;ctl.autoRotateSpeed=.4;
+S.add(new THREE.AmbientLight(0x88aaff,.6));const pl=new THREE.PointLight(0x66ccff,300);S.add(pl);
+const comp=new EffectComposer(R);comp.addPass(new RenderPass(S,C));const bloom=new UnrealBloomPass(new THREE.Vector2(1,1),1.1,.6,.1);comp.addPass(bloom);
+// grid + stars
+const g=new THREE.PolarGridHelper(34,16,8,64,0x114466,0x0a2a44);g.position.y=-6;S.add(g);
+const sg=new THREE.BufferGeometry(),sp=[];for(let i=0;i<1500;i++)sp.push((Math.random()-.5)*300,(Math.random()-.5)*300,(Math.random()-.5)*300);sg.setAttribute('position',new THREE.Float32BufferAttribute(sp,3));S.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0x6688aa,size:.3})));
+function label(t){const c=document.createElement('canvas');c.width=1024;c.height=96;const x=c.getContext('2d');x.font='bold 34px system-ui';x.fillStyle='#dff6ff';x.textAlign='center';x.fillText(t,512,60);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false}));s.scale.set(20,1.9,1);return s}
+const N={},meshes=[];const outer=D.nodes.filter(n=>!n.core);
+D.nodes.forEach(n=>{const col=COL[n.status]||0xffffff;const r=n.core?3:1.4;
+ const m=new THREE.Mesh(new THREE.IcosahedronGeometry(r,3),new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:.7,metalness:.4,roughness:.2}));
+ const ring=new THREE.Mesh(new THREE.TorusGeometry(r*1.6,.05,8,64),new THREE.MeshBasicMaterial({color:col}));ring.rotation.x=Math.PI/2;m.add(ring);
+ const l=label(n.name);l.position.y=r+1.8;m.add(l);m.userData={n,ring};S.add(m);meshes.push(m);N[n.id]=m;
+ if(!n.core){const i=outer.indexOf(n);m.userData.a=i/outer.length*Math.PI*2;m.userData.rad=i%2?22:15;m.userData.y=(i%3-1)*3;}});
+const lines=D.links.map(([a,b])=>{const geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]);const ln=new THREE.Line(geo,new THREE.LineBasicMaterial({color:0x2a7fbf,transparent:true,opacity:.5}));S.add(ln);return {a:N[a],b:N[b],ln}});
+const P=[];const pg=new THREE.SphereGeometry(.18,8,8),pm=new THREE.MeshBasicMaterial({color:0xffd34d});
+lines.forEach(L=>{for(let k=0;k<4;k++){const p=new THREE.Mesh(pg,pm);p.userData={L,t:k/4};S.add(p);P.push(p)}});
+const ray=new THREE.Raycaster(),mv=new THREE.Vector2(),det=document.getElementById('detail');
+cv.addEventListener('pointerup',e=>{mv.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);ray.setFromCamera(mv,C);const h=ray.intersectObjects(meshes,false)[0];if(!h)return;const n=h.object.userData.n;
+ det.style.display='block';det.innerHTML=`<span class=x onclick="this.parentNode.style.display='none'">✕</span><h3>${n.name}</h3><span class=st style="color:#${(COL[n.status]).toString(16).padStart(6,'0')}">${n.status}</span><p><b>Owner bot:</b> ${n.owner}</p><p><b>Money link:</b> ${n.revenue}</p><ul>${n.facts.map(f=>`<li>${f}</li>`).join('')}</ul><p><small>Connected to: ${D.links.filter(l=>l.includes(n.id)).map(l=>D.nodes.find(x=>x.id==(l[0]==n.id?l[1]:l[0])).name).join(', ')}</small></p>`});
+function rs(){R.setSize(innerWidth,innerHeight);comp.setSize(innerWidth,innerHeight);C.aspect=innerWidth/innerHeight;C.fov=innerWidth<760?75:55;C.updateProjectionMatrix()}addEventListener('resize',rs);rs();
+const clk=new THREE.Clock();(function loop(){const t=clk.getElapsedTime();
+ meshes.forEach(m=>{const u=m.userData;if(u.a!==undefined){const a=u.a+t*.05*(u.rad<20?1.3:1);m.position.set(Math.cos(a)*u.rad,u.y+Math.sin(t+u.a)*.5,Math.sin(a)*u.rad)}u.ring.rotation.z=t;m.rotation.y=t*.3});
+ lines.forEach(L=>{const p=L.ln.geometry.attributes.position;p.setXYZ(0,...L.a.position.toArray());p.setXYZ(1,...L.b.position.toArray());p.needsUpdate=true});
+ P.forEach(p=>{const u=p.userData;u.t=(u.t+.004)%1;p.position.lerpVectors(u.L.a.position,u.L.b.position,u.t)});
+ ctl.update();comp.render();requestAnimationFrame(loop)})();
+</script></body></html>
